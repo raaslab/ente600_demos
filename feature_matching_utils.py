@@ -21,6 +21,20 @@ def load_demo_images() -> tuple[np.ndarray, np.ndarray]:
     return image1, image2
 
 
+def show_input_images(image1: np.ndarray, image2: np.ndarray) -> None:
+    import matplotlib.pyplot as plt
+
+    fig, axes = plt.subplots(1, 2, figsize=(10, 5))
+    axes[0].imshow(image1, cmap="gray")
+    axes[0].set_title("Image 1")
+    axes[0].axis("off")
+    axes[1].imshow(image2, cmap="gray")
+    axes[1].set_title("Image 2")
+    axes[1].axis("off")
+    plt.tight_layout()
+    plt.show()
+
+
 def detect_harris_corners(
     image: np.ndarray,
     max_corners: int = 60,
@@ -111,6 +125,25 @@ def draw_corners(image: np.ndarray, corners: np.ndarray, color: tuple[int, int, 
     return panel
 
 
+def show_detected_corners(
+    image1: np.ndarray,
+    corners1: np.ndarray,
+    image2: np.ndarray,
+    corners2: np.ndarray,
+) -> None:
+    import matplotlib.pyplot as plt
+
+    fig, axes = plt.subplots(1, 2, figsize=(10, 5))
+    axes[0].imshow(cv2.cvtColor(draw_corners(image1, corners1), cv2.COLOR_BGR2RGB))
+    axes[0].set_title("Harris corners: image 1")
+    axes[0].axis("off")
+    axes[1].imshow(cv2.cvtColor(draw_corners(image2, corners2), cv2.COLOR_BGR2RGB))
+    axes[1].set_title("Harris corners: image 2")
+    axes[1].axis("off")
+    plt.tight_layout()
+    plt.show()
+
+
 def draw_matches(
     image1: np.ndarray,
     image2: np.ndarray,
@@ -134,3 +167,21 @@ def draw_matches(
         cv2.line(canvas, (int(x1), int(y1)), (int(x2 + offset_x), int(y2)), color, 1, cv2.LINE_AA)
 
     return canvas
+
+
+def show_feature_matches(
+    image1: np.ndarray,
+    image2: np.ndarray,
+    corners1: np.ndarray,
+    corners2: np.ndarray,
+    matches: list[tuple[int, int, float]],
+    max_matches: int = 25,
+) -> None:
+    import matplotlib.pyplot as plt
+
+    match_panel = draw_matches(image1, image2, corners1, corners2, matches, max_matches=max_matches)
+    plt.figure(figsize=(14, 6))
+    plt.imshow(cv2.cvtColor(match_panel, cv2.COLOR_BGR2RGB))
+    plt.title("Feature matches")
+    plt.axis("off")
+    plt.show()
