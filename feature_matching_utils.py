@@ -96,6 +96,56 @@ def extract_patch_descriptors(
     return np.array(kept_corners, dtype=np.int32), np.array(descriptors, dtype=np.float32)
 
 
+def get_patch_around_corner(image: np.ndarray, corner: np.ndarray, patch_size: int) -> np.ndarray:
+    half = patch_size // 2
+    padded = cv2.copyMakeBorder(image, half, half, half, half, cv2.BORDER_REFLECT)
+    x, y = (int(v) for v in corner)
+    return padded[y : y + patch_size, x : x + patch_size].astype(np.float32)
+
+
+def show_patch_descriptor_examples(
+    image: np.ndarray,
+    corners: np.ndarray,
+    descriptors: np.ndarray,
+    patch_size: int,
+    num_examples: int = 3,
+) -> None:
+    import matplotlib.pyplot as plt
+
+    if len(corners) == 0 or len(descriptors) == 0:
+        print("No descriptors to display.")
+        return
+
+    count = min(num_examples, len(corners), len(descriptors))
+    indices = np.linspace(0, len(corners) - 1, count, dtype=int)
+
+    fig, axes = plt.subplots(3, count, figsize=(4 * count, 8))
+    if count == 1:
+        axes = np.array(axes).reshape(3, 1)
+
+    for column, index in enumerate(indices):
+        patch = get_patch_around_corner(image, corners[index], patch_size)
+        descriptor_image = descriptors[index].reshape(patch_size, patch_size)
+        x, y = corners[index]
+
+        axes[0, column].imshow(patch, cmap="gray")
+        axes[0, column].set_title(f"Patch at ({x}, {y})")
+        axes[0, column].axis("off")
+
+        axes[1, column].imshow(descriptor_image, cmap="coolwarm")
+        axes[1, column].set_title("Normalized patch descriptor")
+        axes[1, column].axis("off")
+
+        axes[2, column].plot(descriptors[index], linewidth=1.5)
+        axes[2, column].set_title("Flattened descriptor vector")
+        axes[2, column].set_xlabel("descriptor index")
+        axes[2, column].set_ylabel("value")
+        axes[2, column].grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    plt.show()
+
+
 def match_descriptors(
     desc1: np.ndarray,
     desc2: np.ndarray,
